@@ -1,0 +1,2141 @@
+{
+ "schema": "HL_SCOREBOARD_GOALS/1",
+ "file_note": "Greenfield sign-off gates v2, written 2026-10-04 by Lee's FINAL-CHECK (Opus) from v1 and two refuter reviews. One goal per gate (GF-M1..M8 for the checker and machines, GF-G01..G28 for Greenfield); a gate's extra checks are part goals (GF-<gate>-P<n>) in its depends_on, so the gate is green only when every part is green. Blanks that cannot pass: addresses ending .not-recorded.invalid, names starting NOT-RECORDED-, and all-zero fingerprints. Runs on the outside checker as ${SCOREBOARD}/goals-greenfield.json with goals-greenfield.lock. LOCKED 2026-10-06 by OD-20261006-LOCK-THE-33-GREENFIELD-GATES (Zach: \"Yes, lock the thirty three goals, whatever they are, the thirty three milestones, build those. I lock it, do it. Yes, do it.\"). Dates and tests are no longer provisional; a change needs a new owner decision and a logged relock.",
+ "goals": [
+  {
+   "id": "GF-M1-P1",
+   "track": "M",
+   "title": "The clock runs - results carry a 'valid until' time (fix F2)",
+   "owner": "lee",
+   "due": "2026-10-06",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/scoreboard-feed.json",
+     "pattern": "^\\s*\"valid_until\":\\s*\".*$",
+     "min": 1
+    }
+   },
+   "depends_on": [],
+   "done_means": "The published results file carries a 'valid until' time, so the Owner OS can show every gate amber the moment the checker stops, instead of leaving the last green on the board.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Fix F2 from scoreboard/FINAL-CHECK-20261004.md.",
+   "approval": null
+  },
+  {
+   "id": "GF-M1-P2",
+   "track": "M",
+   "title": "The clock runs - its copy of the Studio's records was pulled in the last hour",
+   "owner": "houseloop-maintenance",
+   "due": "2026-10-06",
+   "check": {
+    "type": "job_ran_within",
+    "params": {
+     "state_file": "${SCOREBOARD}/mirror/PULLED_AT.json",
+     "field": "pulled_at",
+     "minutes": 60
+    }
+   },
+   "depends_on": [],
+   "done_means": "The outside checker's own read-only copy of the plan ledger and the factory records was refreshed within the last 60 minutes, so plan and certificate gates are judged on current records.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). The pull is a read-only copy made by the outside account itself; no seat writes into that account.",
+   "approval": null
+  },
+  {
+   "id": "GF-M1-P3",
+   "track": "M",
+   "title": "The clock runs - the installed checker is release 1.1.0 or later (fix F1)",
+   "owner": "lee",
+   "due": "2026-10-06",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/check.py",
+     "pattern": "^CHECKER_VERSION = \"(?:1\\.[1-9][0-9]*|[2-9][0-9]*\\.[0-9]+)\\.[0-9]+\"\\s*$",
+     "min": 1
+    }
+   },
+   "depends_on": [],
+   "done_means": "The checker of record is release 1.1.0 or later, in which a lock that is not the newest lock-log entry stops every test and a relock needs an owner decision file, so a hand-written lock or a softened test turns red.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Fix F1 from scoreboard/FINAL-CHECK-20261004.md; release 1.1.0 was being built on the Studio at 19:55Z today.",
+   "approval": null
+  },
+  {
+   "id": "GF-M1",
+   "track": "M",
+   "title": "The clock runs: the outside checker ran in the last hour",
+   "owner": "houseloop-maintenance",
+   "due": "2026-10-06",
+   "check": {
+    "type": "job_ran_within",
+    "params": {
+     "state_file": "${SCOREBOARD}/heartbeat.json",
+     "field": "generated_at",
+     "minutes": 60
+    }
+   },
+   "depends_on": [
+    "GF-M1-P1",
+    "GF-M1-P2",
+    "GF-M1-P3"
+   ],
+   "done_means": "The checker of record, running on Camp David under its own account that no AI seat can log into, finished a run within the last 60 minutes. A checker cannot vouch for itself while it is dead, so the Owner OS also compares 'valid until' with its own clock on every view (part P1).",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Waits on Zach's decision 2 (outside account) and fixes F1 and F2. Install layout: one folder holds check.py, feed.py, goals-greenfield.json, goals-greenfield.lock, the results and mirror/.",
+   "approval": null
+  },
+  {
+   "id": "GF-M2",
+   "track": "M",
+   "title": "The Studio has at least 45 GB free disk",
+   "owner": "houseloop-maintenance",
+   "due": "2026-10-06",
+   "check": {
+    "type": "disk_free_at_least",
+    "params": {
+     "path": "/System/Volumes/Data",
+     "gb": 45,
+     "ssh_host": "zachspradling@Mac-Studio.local"
+    }
+   },
+   "depends_on": [],
+   "done_means": "The Studio's real data volume reports 45 GB or more free (1 GB = 1,073,741,824 bytes), read by a one-shot ssh from the outside checker.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Basis: the build seat's week-1 plan item 4 (the local environment asks 20 GB; free the Studio to about 45 GB). Studio host name from scoreboard/LOCK-LOG.md; reachability from Camp David NOT RECORDED.",
+   "approval": null
+  },
+  {
+   "id": "GF-M3",
+   "track": "M",
+   "title": "Round-one plan gates are checked by signature, not by text",
+   "owner": "lee",
+   "due": "2026-10-06",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/goals-greenfield.json",
+     "pattern": "^\\s*(?:\"type\": \"ledger_verified_count_at_least\",?|\"signature\": \\{)\\s*$",
+     "min": 7
+    }
+   },
+   "depends_on": [],
+   "done_means": "The locked gates file has moved all 7 round-one plan goals (G01, G03, G06 and their parts) onto the signature-checked ledger count. Until then those gates show the rows found but cannot turn green.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). The new check verifies the ledger's hash chain against its head file, each Ed25519 signature against pinned key ids, drops revoked and superseded rows, and counts each record id once. The ledger's own append tool already holds the signature verifier. Reads the goals file itself: keep it written one key per line.",
+   "approval": null
+  },
+  {
+   "id": "GF-M4-P1",
+   "track": "M",
+   "title": "Checker round 2 - a CI check counts only if it ended 'success'",
+   "owner": "lee",
+   "due": "2026-10-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/check.py",
+     "pattern": "^ONLY_SUCCESS_CHECKS\\s*=\\s*True\\s*$",
+     "min": 1
+    }
+   },
+   "depends_on": [],
+   "done_means": "The installed checker treats GitHub's 'skipped' and 'neutral' as not done.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Before the first frozen test is armed.",
+   "approval": null
+  },
+  {
+   "id": "GF-M4-P2",
+   "track": "M",
+   "title": "Checker round 2 - results are signed by the outside account",
+   "owner": "lee",
+   "due": "2026-10-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/scoreboard-feed.json",
+     "pattern": "^\\s*\"signature\":\\s*\".*$",
+     "min": 1
+    }
+   },
+   "depends_on": [],
+   "done_means": "The published results carry a signature made with a key held only in the outside account, so a copy edited on the Studio shows as unverified.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-M4",
+   "track": "M",
+   "title": "Checker round 2: the sign-up test is switched on",
+   "owner": "lee",
+   "due": "2026-10-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/check.py",
+     "pattern": "^\\s*\"e2e_signup_lands\":\\s*(?!_stub)[A-Za-z_][A-Za-z0-9_]*,\\s*$",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-M4-P1",
+    "GF-M4-P2"
+   ],
+   "done_means": "The installed checker runs the sign-up test for real (today it is a stub that always says 'cannot check'). It signs up twice with the QA test identity and passes only when exactly one person exists, and it can sign in to the private test site.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Needed by G04 (Oct 12). New parameters it needs: auth and repeat_must_match.",
+   "approval": null
+  },
+  {
+   "id": "GF-M5",
+   "track": "M",
+   "title": "Build certificates are checked by signature",
+   "owner": "lee",
+   "due": "2026-10-12",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/check.py",
+     "pattern": "^\\s*\"cert_verified_count_at_least\":\\s*(?!_stub)[A-Za-z_][A-Za-z0-9_]*,\\s*$",
+     "min": 1
+    }
+   },
+   "depends_on": [],
+   "done_means": "The installed checker counts a piece as certified only when its certificate verifies against the cert-issuer key registered in the ledger (c980f0a9...) and carries the attestation of the right reviewer class.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Needed by G05 (Oct 14). The certificate file format is NOT RECORDED: no certificate exists yet.",
+   "approval": null
+  },
+  {
+   "id": "GF-M6",
+   "track": "M",
+   "title": "Second-round plan gates are checked by signature, with row counts from their stamp orders",
+   "owner": "lee",
+   "due": "2026-10-25",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/goals-greenfield.json",
+     "pattern": "^\\s*(?:\"type\": \"ledger_verified_count_at_least\",?|\"signature\": \\{)\\s*$",
+     "min": 25
+    }
+   },
+   "depends_on": [],
+   "done_means": "All 25 plan goals (the 7 round-one goals plus the 18 second-round goals in G09 and G12) use the signature-checked count, and each second-round count is the row count named in its stamp order.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). A week before G09 (Nov 1). Second-round row counts are NOT RECORDED today.",
+   "approval": null
+  },
+  {
+   "id": "GF-M7",
+   "track": "M",
+   "title": "Database checks are switched on",
+   "owner": "lee",
+   "due": "2026-10-31",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/check.py",
+     "pattern": "^\\s*\"db_row_count_at_least\":\\s*(?!_stub)[A-Za-z_][A-Za-z0-9_]*,\\s*$",
+     "min": 1
+    }
+   },
+   "depends_on": [],
+   "done_means": "The installed checker reads counts from the new system's databases through read-only logins and named views. The views are written by the test author, not the builders, and pinned by fingerprint.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). A week before the first database gate (G10, G11 on Nov 7). Today database checks are stubs.",
+   "approval": null
+  },
+  {
+   "id": "GF-M8",
+   "track": "M",
+   "title": "The checker can test 'never more than' and 'counts match'",
+   "owner": "lee",
+   "due": "2026-12-11",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/check.py",
+     "pattern": "^\\s*\"db_counts_match\":\\s*(?!_stub)[A-Za-z_][A-Za-z0-9_]*,\\s*$",
+     "min": 1
+    }
+   },
+   "depends_on": [],
+   "done_means": "The installed checker has the two count types the cutover needs: a repeat sign-up never makes a second person and the old CRM writes nothing after a switch (db_count_at_most), and imported totals match the old app (db_counts_match). Parts using them are added to G24 and G27 by a logged relock.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). A week before G23 (Dec 18).",
+   "approval": null
+  },
+  {
+   "id": "GF-G01",
+   "track": 1,
+   "title": "Plans: buyer-safe batch 3 (SB-FP-C) signed, 47 rows",
+   "owner": "current-phase-architect",
+   "due": "2026-10-06",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-FP\\-C\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 47,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M3"
+   ],
+   "done_means": "At least 47 engineering stamps for buyer-safe batch 3 (SB-FP-C), signed with the canon auditor's key, are in the plan ledger.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Order issued Oct 4, 2:14 PM EDT; about 2 h of signing per batch (measured 113 to 123 min).",
+   "approval": null
+  },
+  {
+   "id": "GF-G02",
+   "track": 3,
+   "title": "First CRM screen: the person page shows the frozen test person",
+   "owner": "greenfield-build",
+   "due": "2026-10-09",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://person-page-link.not-recorded.invalid/",
+     "status": 200,
+     "must_contain": [
+      "NOT-RECORDED-frozen-test-person-name"
+     ],
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [],
+   "done_means": "The link the build seat names for Friday opens the new CRM person page and shows the frozen test person's name. Uncertified at-risk work on test data.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Build seat's rung 1a, Fri Oct 9 3:00 PM CT, 'at the plan's own hours' (BUILD-PLAN-WEEK-1 section 2). The address and the name are blanks until the build seat names them; the address must answer from Camp David, not only on the Studio.",
+   "approval": null
+  },
+  {
+   "id": "GF-G03-P1",
+   "track": 1,
+   "title": "Plans: operations log (SB-OBS) signed, 42 rows",
+   "owner": "current-phase-architect",
+   "due": "2026-10-11",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-OBS\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 42,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M3"
+   ],
+   "done_means": "At least 42 canon-auditor-signed engineering stamps for SB-OBS.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). No order issued; values check round 10 failed.",
+   "approval": null
+  },
+  {
+   "id": "GF-G03-P2",
+   "track": 1,
+   "title": "Plans: messaging (SB-COM) signed, 42 rows",
+   "owner": "current-phase-architect",
+   "due": "2026-10-11",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-COM\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 42,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M3"
+   ],
+   "done_means": "At least 42 canon-auditor-signed engineering stamps for SB-COM.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). No order issued; values round 7 failed with 10 blockers.",
+   "approval": null
+  },
+  {
+   "id": "GF-G03",
+   "track": 1,
+   "title": "Plans: all Phase 1 signed (buyer-safe batch 2 SB-FP-B 47, plus SB-OBS 42 and SB-COM 42)",
+   "owner": "current-phase-architect",
+   "due": "2026-10-11",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-FP\\-B\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 47,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-G03-P1",
+    "GF-G03-P2",
+    "GF-G01",
+    "GF-M3"
+   ],
+   "done_means": "At least 47 canon-auditor-signed engineering stamps for buyer-safe batch 2 (SB-FP-B), and its parts. With G01 that is the 178 rows Phase 1 still needs (439 in all).",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Basis: 178 rows at the latest measured pace of 28 a day = 6.4 days, so Oct 11. No order issued for SB-FP-B (stopped at round 6, 5 MAJOR points, one ruling owed). How fast orders get made is UNMEASURED.",
+   "approval": null
+  },
+  {
+   "id": "GF-G04",
+   "track": 3,
+   "title": "Local sign-up demo: a test sign-up makes one person; signing up again finds the same person",
+   "owner": "greenfield-build",
+   "due": "2026-10-12",
+   "check": {
+    "type": "e2e_signup_lands",
+    "params": {
+     "base_url": "https://local-registration-root.not-recorded.invalid/"
+    }
+   },
+   "depends_on": [
+    "GF-M4"
+   ],
+   "done_means": "A test sign-up through the stamped registration root on the build machine makes one person, one relationship and one conversation; signing up again gives the same person. Checked from outside against the build machine.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). UNMEASURED until the build seat's measured line on Tue Oct 6, 8:00 PM CT. Basis: rung 2 is a 129 plan-hour chain; from Mon Oct 5 8:00 AM CT it ends about Sat Oct 10, 5 PM. The address is a blank until the build seat names it.",
+   "approval": null
+  },
+  {
+   "id": "GF-G05",
+   "track": 3,
+   "title": "Construction floor: all 28 pieces certified",
+   "owner": "lee",
+   "due": "2026-10-14",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/factory-receipts",
+     "glob": "CERTIFICATION.json",
+     "unit": "files",
+     "min": 28,
+     "pattern": "^NOT-RECORDED-certificate-format-set-when-M5-lands$"
+    }
+   },
+   "depends_on": [
+    "GF-M5"
+   ],
+   "done_means": "28 floor pieces (MOB-01) each hold a certificate that verifies. This is the first measured count of review rounds per piece.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Architect's build-ahead model: typical Oct 14, best Oct 10, worst Oct 21. Replaces v1 gates 7 and 8. The last step (stage C6) needs an Inspector-class sign-off and no one is qualified (Lee rules OD-INSPECTOR-QUAL). Waits on Zach's decision 6 for the first floor piece.",
+   "approval": null
+  },
+  {
+   "id": "GF-G06-P1",
+   "track": 1,
+   "title": "Plans: website / growth (SB-GRW) signed, 33 rows",
+   "owner": "current-phase-architect",
+   "due": "2026-10-15",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-GRW\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 33,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M3"
+   ],
+   "done_means": "At least 33 canon-auditor-signed engineering stamps for SB-GRW.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G06-P2",
+   "track": 1,
+   "title": "Plans: Myli (SB-MYL) signed, 42 rows",
+   "owner": "current-phase-architect",
+   "due": "2026-10-15",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-MYL\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 42,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M3"
+   ],
+   "done_means": "At least 42 canon-auditor-signed engineering stamps for SB-MYL.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G06",
+   "track": 1,
+   "title": "Plans: all of round one signed (MLS display SB-IDX 33, website SB-GRW 33, Myli SB-MYL 42)",
+   "owner": "current-phase-architect",
+   "due": "2026-10-15",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-IDX\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 33,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-G06-P1",
+    "GF-G06-P2",
+    "GF-G03",
+    "GF-M3"
+   ],
+   "done_means": "At least 33 canon-auditor-signed engineering stamps for MLS listing display (SB-IDX), and its parts: the 108 parked rows, 547 in all.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Basis: 108 rows at 28 a day after Oct 11 = 3.9 days, so Oct 15 (Owner OS stamp forecast D-04 is also Oct 15). The three orders are not drafted.",
+   "approval": null
+  },
+  {
+   "id": "GF-G07-P1",
+   "track": 3,
+   "title": "Repositories ready - the plan registry exists and is private",
+   "owner": "lee",
+   "due": "2026-10-16",
+   "check": {
+    "type": "github_repo_exists",
+    "params": {
+     "repo": "spradlz/houseloop-plan-registry",
+     "private": true,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "GitHub shows the plan registry repository (houseloop-plan-registry), private.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Created by floor piece GF-MOB-C1-03.",
+   "approval": null
+  },
+  {
+   "id": "GF-G07-P2",
+   "track": 3,
+   "title": "Repositories ready - the app's main branch is protected",
+   "owner": "lee",
+   "due": "2026-10-16",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://api.github.com/repos/spradlz/houseloop-greenfield/rules/branches/main",
+     "status": 200,
+     "must_contain": [
+      "\"pull_request\"",
+      "\"non_fast_forward\""
+     ],
+     "auth": {
+      "keychain": "hl-gates-github-readonly"
+     },
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [],
+   "done_means": "GitHub's rules for the app's main branch require a pull request (no direct pushes) and refuse force pushes. Set as a GitHub ruleset.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Whether the rules also bind admins cannot be read with a read-only key (NOT CHECKABLE from outside).",
+   "approval": null
+  },
+  {
+   "id": "GF-G07-P3",
+   "track": 3,
+   "title": "Repositories ready - the plan registry's main branch is protected",
+   "owner": "lee",
+   "due": "2026-10-16",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://api.github.com/repos/spradlz/houseloop-plan-registry/rules/branches/main",
+     "status": 200,
+     "must_contain": [
+      "\"pull_request\"",
+      "\"non_fast_forward\""
+     ],
+     "auth": {
+      "keychain": "hl-gates-github-readonly"
+     },
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [],
+   "done_means": "GitHub's rules for the plan registry's main branch require a pull request (no direct pushes) and refuse force pushes. Set as a GitHub ruleset.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Whether the rules also bind admins cannot be read with a read-only key (NOT CHECKABLE from outside).",
+   "approval": null
+  },
+  {
+   "id": "GF-G07-P4",
+   "track": 3,
+   "title": "Repositories ready - the checker workflows's main branch is protected",
+   "owner": "lee",
+   "due": "2026-10-16",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://api.github.com/repos/spradlz/houseloop-evaluating-workflows/rules/branches/main",
+     "status": 200,
+     "must_contain": [
+      "\"pull_request\"",
+      "\"non_fast_forward\""
+     ],
+     "auth": {
+      "keychain": "hl-gates-github-readonly"
+     },
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [],
+   "done_means": "GitHub's rules for the checker workflows's main branch require a pull request (no direct pushes) and refuse force pushes. Set as a GitHub ruleset.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Whether the rules also bind admins cannot be read with a read-only key (NOT CHECKABLE from outside).",
+   "approval": null
+  },
+  {
+   "id": "GF-G07-P5",
+   "track": 3,
+   "title": "Repositories ready - the record book's main branch is protected",
+   "owner": "lee",
+   "due": "2026-10-16",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://api.github.com/repos/spradlz/houseloop-control-custody/rules/branches/main",
+     "status": 200,
+     "must_contain": [
+      "\"pull_request\"",
+      "\"non_fast_forward\""
+     ],
+     "auth": {
+      "keychain": "hl-gates-github-readonly"
+     },
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [],
+   "done_means": "GitHub's rules for the record book's main branch require a pull request (no direct pushes) and refuse force pushes. Set as a GitHub ruleset.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Whether the rules also bind admins cannot be read with a read-only key (NOT CHECKABLE from outside).",
+   "approval": null
+  },
+  {
+   "id": "GF-G07",
+   "track": 3,
+   "title": "Repositories ready: the app and the plan registry exist, and all four main branches are protected",
+   "owner": "lee",
+   "due": "2026-10-16",
+   "check": {
+    "type": "github_repo_exists",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "private": true,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G07-P1",
+    "GF-G07-P2",
+    "GF-G07-P3",
+    "GF-G07-P4",
+    "GF-G07-P5"
+   ],
+   "done_means": "GitHub shows the app repository (houseloop-greenfield), private, and every part holds.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). UNMEASURED. Moved from Oct 8 to Fri Oct 16: by the Architect's Oct 4 ruling the app repository is not created in week 1 and the registry comes in week 2 (BUILD-PLAN-WEEK-1 sections 1.3 and 3). Owner account spradlz per local remotes; spradlz versus a houseloop organisation is NOT RECORDED as settled. The two repositories that already exist do not count as progress.",
+   "approval": null
+  },
+  {
+   "id": "GF-G08-P1",
+   "track": 3,
+   "title": "Test site - a stranger is refused",
+   "owner": "greenfield-build",
+   "due": "2026-10-18",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://staging.gf.houseloop.ai/",
+     "status": 401,
+     "follow_redirects": false,
+     "max_seconds": 10
+    }
+   },
+   "depends_on": [],
+   "done_means": "An anonymous visit to the test site's front page is refused with 401.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). 401 is this ladder's spec.",
+   "approval": null
+  },
+  {
+   "id": "GF-G08-P2-P1",
+   "track": 3,
+   "title": "Test site - the frozen environment test passes - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-10-17",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-env-acceptance-staging.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-env-acceptance-staging.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G08-P2",
+   "track": 3,
+   "title": "Test site - the frozen environment test passes",
+   "owner": "greenfield-build",
+   "due": "2026-10-18",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-env-acceptance-staging"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G08-P2-P1"
+   ],
+   "done_means": "The frozen environment acceptance test is green on the app's main branch.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Owner OS forecast B-03 (environments certified) Oct 18. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  },
+  {
+   "id": "GF-G08",
+   "track": 3,
+   "title": "Test site answers, is private, and its environment is complete",
+   "owner": "greenfield-build",
+   "due": "2026-10-18",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://staging.gf.houseloop.ai/healthz",
+     "status": 200,
+     "must_contain": [
+      "houseloop-greenfield",
+      "staging"
+     ],
+     "max_seconds": 10
+    }
+   },
+   "depends_on": [
+    "GF-G08-P1",
+    "GF-G08-P2",
+    "GF-G07"
+   ],
+   "done_means": "The test site's health address answers 200 naming the app and 'staging'; strangers are refused; the frozen environment test is green.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). UNMEASURED. v1 dated 'test site answers' Oct 11 (Owner OS B-02), but the build seat's plan puts staging (ENV stage C3) after the registry repository (week 2), so it joins B-03, Oct 18. Address waits on Zach's decision 5 and a DNS record.",
+   "approval": null
+  },
+  {
+   "id": "GF-G09-P1",
+   "track": 1,
+   "title": "Second-round plans A - shared sheets, wave 2 (SB-R2-MASTER-P2) signed",
+   "owner": "current-phase-architect",
+   "due": "2026-11-01",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-R2\\-MASTER\\-P2\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "Every row of SB-R2-MASTER-P2's stamp order is signed with the canon auditor's key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Row count NOT RECORDED; 1 is a placeholder that cannot decide green (waits on M6, where the real count is set).",
+   "approval": null
+  },
+  {
+   "id": "GF-G09-P2",
+   "track": 1,
+   "title": "Second-round plans A - production admission (SB-R2-OPS-ADM) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-01",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-OPS\\-ADM\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-OPS-ADM with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Covering every build stage is checked once M6 lands; the stage list is NOT RECORDED.",
+   "approval": null
+  },
+  {
+   "id": "GF-G09-P3",
+   "track": 1,
+   "title": "Second-round plans A - migration and data conservation (SB-R2-MIG-CONS) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-01",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-MIG\\-CONS\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-MIG-CONS with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Covering every build stage is checked once M6 lands; the stage list is NOT RECORDED.",
+   "approval": null
+  },
+  {
+   "id": "GF-G09-P4",
+   "track": 1,
+   "title": "Second-round plans A - cutover plan (SB-R2-MIG-CUT) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-01",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-MIG\\-CUT\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-MIG-CUT with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Covering every build stage is checked once M6 lands; the stage list is NOT RECORDED.",
+   "approval": null
+  },
+  {
+   "id": "GF-G09-P5",
+   "track": 1,
+   "title": "Second-round plans A - MLS sources and rights (SB-R2-IDX-MLS) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-01",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-IDX\\-MLS\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-IDX-MLS with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Covering every build stage is checked once M6 lands; the stage list is NOT RECORDED.",
+   "approval": null
+  },
+  {
+   "id": "GF-G09-P6",
+   "track": 1,
+   "title": "Second-round plans A - home value and homeowner dashboard (SB-R2-SEL-A) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-01",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-SEL\\-A\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-SEL-A with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Covering every build stage is checked once M6 lands; the stage list is NOT RECORDED.",
+   "approval": null
+  },
+  {
+   "id": "GF-G09",
+   "track": 1,
+   "title": "Second-round plans A: production admission, migration, cutover plan, MLS sources, home value",
+   "owner": "current-phase-architect",
+   "due": "2026-11-01",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-R2\\-MASTER\\-P1\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-G09-P1",
+    "GF-G09-P2",
+    "GF-G09-P3",
+    "GF-G09-P4",
+    "GF-G09-P5",
+    "GF-G09-P6",
+    "GF-G06",
+    "GF-M6"
+   ],
+   "done_means": "Every row of the wave-1 shared sheets (SB-R2-MASTER-P1) is signed, and the five batches in the parts are admitted.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Owner OS forecasts D-10 and D-06, Nov 1. Row count NOT RECORDED; 1 is a placeholder that cannot decide green.",
+   "approval": null
+  },
+  {
+   "id": "GF-G10",
+   "track": 3,
+   "title": "CRM demo on the test site: a test sign-up lands as one person",
+   "owner": "greenfield-build",
+   "due": "2026-11-07",
+   "check": {
+    "type": "e2e_signup_lands",
+    "params": {
+     "base_url": "https://staging.gf.houseloop.ai/"
+    }
+   },
+   "depends_on": [
+    "GF-G03",
+    "GF-G08",
+    "GF-M4"
+   ],
+   "done_means": "A scripted sign-up with the QA test identity on the test site lands as exactly one person in the new CRM; signing up again finds the same person.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Owner OS forecast for 'CRM lead desk on staging' (B-05) Nov 7. Split from v1 gate 11 (Oct 23, unmeasured).",
+   "approval": null
+  },
+  {
+   "id": "GF-G11-P1",
+   "track": 3,
+   "title": "Operations log - AI cost recorded with a price",
+   "owner": "greenfield-build",
+   "due": "2026-11-07",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-staging",
+     "table": "NOT-RECORDED-view-ai-cost-rows-priced-24h",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "At least one priced AI-cost row in the last 24 hours on the test site.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). View name is a blank until the test author writes it.",
+   "approval": null
+  },
+  {
+   "id": "GF-G11",
+   "track": 3,
+   "title": "Operations log on the test site: every action and AI cost recorded",
+   "owner": "greenfield-build",
+   "due": "2026-11-07",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-staging",
+     "table": "NOT-RECORDED-view-activity-rows-for-test-person-24h",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-G11-P1",
+    "GF-G03",
+    "GF-G08",
+    "GF-M7"
+   ],
+   "done_means": "The test person's activity trail has at least one row in the last 24 hours, and part P1 holds.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: operations log certified Oct 27, plus 11 days for its plans landing Oct 11.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P1",
+   "track": 1,
+   "title": "Second-round plans B - shared sheets, wave 4 (SB-R2-MASTER-P4) signed",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-R2\\-MASTER\\-P4\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "Every row of SB-R2-MASTER-P4's stamp order is signed with the canon auditor's key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Row count NOT RECORDED; 1 is a placeholder that cannot decide green.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P2",
+   "track": 1,
+   "title": "Second-round plans B - notifications (SB-R2-COM-NOTIFY) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-COM\\-NOTIFY\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-COM-NOTIFY with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P3",
+   "track": 1,
+   "title": "Second-round plans B - Myli follow-up (SB-R2-MYL-C) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-MYL\\-C\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-MYL-C with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P4",
+   "track": 1,
+   "title": "Second-round plans B - past clients (SB-R2-SEL-B) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-SEL\\-B\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-SEL-B with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P5",
+   "track": 1,
+   "title": "Second-round plans B - showings and appointments (SB-R2-SHO-D) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-SHO\\-D\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-SHO-D with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P6",
+   "track": 1,
+   "title": "Second-round plans B - Follow Up Boss move and triggers (SB-R2-INT-G) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-INT\\-G\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-INT-G with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P7",
+   "track": 1,
+   "title": "Second-round plans B - reactivation (SB-R2-REA) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-REA\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-REA with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P8",
+   "track": 1,
+   "title": "Second-round plans B - saved searches and alerts (SB-R2-IDX-P4) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-IDX\\-P4\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-IDX-P4 with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P9",
+   "track": 1,
+   "title": "Second-round plans B - website second round and community pages (SB-R2-GRW-I) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-GRW\\-I\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-GRW-I with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12-P10",
+   "track": 1,
+   "title": "Second-round plans B - backups and watchdogs (SB-R2-OPS-REM) admitted",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/admissions.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"PackageAdmission\")(?=.*\"record_id\":\"ADM:)(?=.*\"stamp_batch_id\":\"SB\\-R2\\-OPS\\-REM\")(?=.*\"open_holds\":\\[\\])(?=.*\"signer_key_id\":\"7fe717b586f9ebf6978402cf115c1270609eb972cf8ee0b196c0cabbfd293880\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-M6"
+   ],
+   "done_means": "The ledger holds a package admission for SB-R2-OPS-REM with no open holds, signed with the canon auditor's admitter key.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Stage coverage checked once M6 lands.",
+   "approval": null
+  },
+  {
+   "id": "GF-G12",
+   "track": 1,
+   "title": "Second-round plans B: notifications, Myli follow-up, past clients, showings, FUB triggers, reactivation, saved searches, community pages, backups",
+   "owner": "current-phase-architect",
+   "due": "2026-11-09",
+   "check": {
+    "type": "ledger_count_at_least",
+    "params": {
+     "path": "${SCOREBOARD}/mirror/architect-ledger/streams/approvals.jsonl",
+     "pattern": "^\\{(?=.*\"record_type\":\"Approval\")(?=.*\"record_id\":\"APR:ENG:)(?=.*\"authority_kind\":\"ENGINEERING\")(?=.*\"stamp_batch_id\":\"SB\\-R2\\-MASTER\\-P3\")(?=.*\"signer_key_id\":\"c1ad44d41892af9e0463ba468db662a5d4ad1eb8d0800dd93c4bebe3b161d94a\").*$",
+     "min": 1,
+     "unit": "lines"
+    }
+   },
+   "depends_on": [
+    "GF-G12-P1",
+    "GF-G12-P2",
+    "GF-G12-P3",
+    "GF-G12-P4",
+    "GF-G12-P5",
+    "GF-G12-P6",
+    "GF-G12-P7",
+    "GF-G12-P8",
+    "GF-G12-P9",
+    "GF-G12-P10",
+    "GF-G09",
+    "GF-M6"
+   ],
+   "done_means": "Every row of the wave-3 shared sheets (SB-R2-MASTER-P3) is signed, and the batches in the parts are admitted.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Owner OS forecasts D-07, D-08 Nov 8 and D-09 Nov 9. Left out as not Dec 31 scope: SB-R2-TRN-E, SB-R2-TWN, SB-R2-CRM-F, SB-R2-MOB02; SB-R2-IDX-STELLAR (Orlando) is on hold by Zach's word.",
+   "approval": null
+  },
+  {
+   "id": "GF-G13-P1",
+   "track": 3,
+   "title": "Messaging - an email reaches the QA inbox",
+   "owner": "greenfield-build",
+   "due": "2026-11-13",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-staging",
+     "table": "NOT-RECORDED-view-qa-emails-delivered-24h",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "At least one delivered email to the QA inbox in 24 hours.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G13-P2",
+   "track": 3,
+   "title": "Messaging - replies land on the same person",
+   "owner": "greenfield-build",
+   "due": "2026-11-13",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-staging",
+     "table": "NOT-RECORDED-view-qa-replies-same-person-24h",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "At least one reply recorded on the same person in 24 hours.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G13",
+   "track": 3,
+   "title": "Messaging on the test site: a text and an email reach the QA phone and inbox; replies land on the same person",
+   "owner": "greenfield-build",
+   "due": "2026-11-13",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-staging",
+     "table": "NOT-RECORDED-view-qa-texts-delivered-with-receipt-24h",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-G13-P1",
+    "GF-G13-P2",
+    "GF-G03",
+    "GF-G08",
+    "GF-G10",
+    "GF-M7"
+   ],
+   "done_means": "At least one text delivered to the QA phone with a carrier receipt in 24 hours, and the parts hold.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: real texting and email Nov 2, plus 11 days. Needs a number for test sends.",
+   "approval": null
+  },
+  {
+   "id": "GF-G14-P1",
+   "track": 3,
+   "title": "Buyer-safe journeys on the test site: search, book, change and cancel a showing; pages publish and withdraw - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-11-07",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-buyer-journeys-staging.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-buyer-journeys-staging.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G14",
+   "track": 3,
+   "title": "Buyer-safe journeys on the test site: search, book, change and cancel a showing; pages publish and withdraw",
+   "owner": "greenfield-build",
+   "due": "2026-11-14",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-buyer-journeys-staging"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G14-P1",
+    "GF-G03",
+    "GF-G08",
+    "GF-M4"
+   ],
+   "done_means": "The frozen buyer-journey test is green on the app's main branch.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: buyer journey accepted Nov 3, plus 11 days. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  },
+  {
+   "id": "GF-G15-P1",
+   "track": 3,
+   "title": "Sign-in, registration, and the website, Zillow and FUB doors in test mode; a repeat sign-up keeps one person - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-11-08",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-access-intake-staging.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-access-intake-staging.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G15",
+   "track": 3,
+   "title": "Sign-in, registration, and the website, Zillow and FUB doors in test mode; a repeat sign-up keeps one person",
+   "owner": "greenfield-build",
+   "due": "2026-11-15",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-access-intake-staging"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G15-P1",
+    "GF-G10",
+    "GF-M4"
+   ],
+   "done_means": "The frozen access-and-intake test is green on the app's main branch.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: registration doors Nov 2 and intake certified Nov 4, plus 11 days. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  },
+  {
+   "id": "GF-G16-P1",
+   "track": 3,
+   "title": "Zach's Phase 1 CRM journey: create Zach Test, find, edit, stage, tag, assign, task, activity, trash, restore - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-11-09",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-phase1-crm-journey-staging.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-phase1-crm-journey-staging.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G16",
+   "track": 3,
+   "title": "Zach's Phase 1 CRM journey: create Zach Test, find, edit, stage, tag, assign, task, activity, trash, restore",
+   "owner": "greenfield-build",
+   "due": "2026-11-16",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-phase1-crm-journey-staging"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G16-P1",
+    "GF-G11",
+    "GF-G15",
+    "GF-M4"
+   ],
+   "done_means": "The frozen Phase 1 CRM journey test is green on the app's main branch. Zach's own 60 to 90 minute walk is separate and not checked by a script.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: CRM certified Nov 5, plus 11 days. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  },
+  {
+   "id": "GF-G17-P2",
+   "track": 3,
+   "title": "Myli on the test site - a governed action with full audit",
+   "owner": "greenfield-build",
+   "due": "2026-11-21",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-staging",
+     "table": "NOT-RECORDED-view-myli-governed-actions-with-audit-24h",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "At least one governed Myli action with its audit trail in 24 hours.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G17-P1",
+   "track": 3,
+   "title": "Myli on the test site: right context on Zach Test, one governed action, full audit - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-11-14",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-myli-staging.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-myli-staging.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G17",
+   "track": 3,
+   "title": "Myli on the test site: right context on Zach Test, one governed action, full audit",
+   "owner": "greenfield-build",
+   "due": "2026-11-21",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-myli-staging"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G17-P1",
+    "GF-G17-P2",
+    "GF-G06",
+    "GF-G16",
+    "GF-M4"
+   ],
+   "done_means": "The frozen Myli test is green on the app's main branch, and part P2 holds.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: Myli certified Nov 6, plus 15 days (its plans land Oct 15); Owner OS B-11 also Nov 21. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  },
+  {
+   "id": "GF-G18-P1",
+   "track": 3,
+   "title": "Home search and home detail on the test site; sold prices hidden where ruled - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-11-15",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-home-search-staging.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-home-search-staging.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G18",
+   "track": 3,
+   "title": "Home search and home detail on the test site; sold prices hidden where ruled",
+   "owner": "greenfield-build",
+   "due": "2026-11-22",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-home-search-staging"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G18-P1",
+    "GF-G06",
+    "GF-G15",
+    "GF-M4"
+   ],
+   "done_means": "The frozen home-search test is green on the app's main branch.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: home search certified Nov 7, plus 15 days. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  },
+  {
+   "id": "GF-G19-P1",
+   "track": 3,
+   "title": "Website and customer dashboard match Zach's locked boards on the test site - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-11-18",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-locked-boards-visual-staging.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-locked-boards-visual-staging.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G19",
+   "track": 3,
+   "title": "Website and customer dashboard match Zach's locked boards on the test site",
+   "owner": "greenfield-build",
+   "due": "2026-11-25",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-locked-boards-visual-staging"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G19-P1",
+    "GF-G17",
+    "GF-G18",
+    "GF-M4"
+   ],
+   "done_means": "The frozen visual test compares the test site's pages with the locked boards and is green on main.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: website certified Nov 10, plus 15 days. The pixel threshold is NOT RECORDED; it is set inside the frozen test when it is frozen. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  },
+  {
+   "id": "GF-G20-P1",
+   "track": 3,
+   "title": "The whole road works end to end on the test site - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-11-23",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-core0-smoke-staging.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-core0-smoke-staging.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G20",
+   "track": 3,
+   "title": "The whole road works end to end on the test site",
+   "owner": "greenfield-build",
+   "due": "2026-11-30",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-core0-smoke-staging"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G20-P1",
+    "GF-G13",
+    "GF-G14",
+    "GF-G15",
+    "GF-G16",
+    "GF-G17",
+    "GF-G18",
+    "GF-G19",
+    "GF-M4"
+   ],
+   "done_means": "The frozen end-to-end test (website, sign-up, CRM lead, text, reply, email, reply, activity, AI cost, Myli) is green on the app's main branch.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Release plan: smoke mid Nov 15, plus 15 days. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  },
+  {
+   "id": "GF-G21",
+   "track": 3,
+   "title": "Production estate answers, apart from the old app",
+   "owner": "lee",
+   "due": "2026-12-01",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://production-health.not-recorded.invalid/healthz",
+     "status": 200,
+     "must_contain": [
+      "houseloop-greenfield",
+      "production"
+     ],
+     "max_seconds": 10
+    }
+   },
+   "depends_on": [
+    "GF-G05",
+    "GF-G09"
+   ],
+   "done_means": "The production health address answers 200 naming the app and 'production'.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Design-desk draft (never ruled) Nov 23, plus 8 days. The address is not chosen.",
+   "approval": null
+  },
+  {
+   "id": "GF-G22",
+   "track": 3,
+   "title": "New front door proven in pass-through on its own test address",
+   "owner": "lee",
+   "due": "2026-12-09",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://front-door-test.not-recorded.invalid/",
+     "user_agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "status": 200,
+     "must_contain": [
+      "rel=\"canonical\"",
+      "https://houseloop.ai"
+     ],
+     "must_not_contain": [
+      "noindex"
+     ],
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [
+    "GF-G21"
+   ],
+   "done_means": "Fetched as Googlebot, the front door's test address answers 200 with a canonical tag to houseloop.ai and no 'noindex'.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Draft window Dec 1 to 13, plus 8 days. The address is not chosen.",
+   "approval": null
+  },
+  {
+   "id": "GF-G23-P1",
+   "track": 3,
+   "title": "houseloop.ai through the new front door - SEO intact",
+   "owner": "lee",
+   "due": "2026-12-18",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://houseloop.ai/",
+     "user_agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "status": 200,
+     "must_contain": [
+      "rel=\"canonical\"",
+      "https://houseloop.ai"
+     ],
+     "must_not_contain": [
+      "noindex"
+     ],
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [],
+   "done_means": "Fetched as Googlebot, houseloop.ai answers 200 with its canonical tag and no 'noindex'.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G23-P2",
+   "track": 3,
+   "title": "houseloop.ai through the new front door - a sign-up also lands in the new CRM",
+   "owner": "lee",
+   "due": "2026-12-18",
+   "check": {
+    "type": "e2e_signup_lands",
+    "params": {
+     "base_url": "https://houseloop.ai/"
+    }
+   },
+   "depends_on": [
+    "GF-M4"
+   ],
+   "done_means": "A scripted sign-up on houseloop.ai with the QA test identity lands as one person in the new CRM (the old CRM still writes too).",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G23",
+   "track": 3,
+   "title": "houseloop.ai runs through the new front door; sign-ups also land in the new CRM (shadow)",
+   "owner": "lee",
+   "due": "2026-12-18",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://houseloop.ai/.well-known/houseloop-edge",
+     "status": 200,
+     "must_contain": [
+      "houseloop-greenfield"
+     ],
+     "max_seconds": 10
+    }
+   },
+   "depends_on": [
+    "GF-G23-P1",
+    "GF-G23-P2",
+    "GF-G20",
+    "GF-G22"
+   ],
+   "done_means": "houseloop.ai's edge marker names the new app, and the parts hold.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Draft intake shadow Dec 10, plus 8 days. Needs Zach's approval to move houseloop.ai (owner row O-15). The marker address is this ladder's spec.",
+   "approval": null
+  },
+  {
+   "id": "GF-G24-P1",
+   "track": 3,
+   "title": "Real data imported - deals",
+   "owner": "lee",
+   "due": "2026-12-19",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-production",
+     "table": "NOT-RECORDED-view-past-client-deals",
+     "min": 1954
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "The production database holds at least 1,954 deals.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Count from the files.",
+   "approval": null
+  },
+  {
+   "id": "GF-G24-P2",
+   "track": 3,
+   "title": "Real data imported - homes",
+   "owner": "lee",
+   "due": "2026-12-19",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-production",
+     "table": "NOT-RECORDED-view-past-client-homes",
+     "min": 1850
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "The production database holds at least 1,850 homes.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Count from the files.",
+   "approval": null
+  },
+  {
+   "id": "GF-G24-P3",
+   "track": 3,
+   "title": "Real data imported - spouse links",
+   "owner": "lee",
+   "due": "2026-12-19",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-production",
+     "table": "NOT-RECORDED-view-spouse-links",
+     "min": 595
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "The production database holds at least 595 spouse links.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Count from the files.",
+   "approval": null
+  },
+  {
+   "id": "GF-G24",
+   "track": 3,
+   "title": "Real data imported and reconciled: the past-client book",
+   "owner": "lee",
+   "due": "2026-12-19",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-production",
+     "table": "NOT-RECORDED-view-past-clients",
+     "min": 1713
+    }
+   },
+   "depends_on": [
+    "GF-G24-P1",
+    "GF-G24-P2",
+    "GF-G24-P3",
+    "GF-G21",
+    "GF-M7",
+    "GF-M8"
+   ],
+   "done_means": "The production database holds at least 1,713 past clients, and the parts hold. A 'counts match the old app' part is added once M8 lands.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Draft production import Dec 7 to 11, plus 8 days. People and lead totals are NOT RECORDED.",
+   "approval": null
+  },
+  {
+   "id": "GF-G25-P1",
+   "track": 3,
+   "title": "Public website on the new system - SEO intact",
+   "owner": "lee",
+   "due": "2026-12-25",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://houseloop.ai/",
+     "user_agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+     "status": 200,
+     "must_contain": [
+      "rel=\"canonical\"",
+      "https://houseloop.ai"
+     ],
+     "must_not_contain": [
+      "noindex"
+     ],
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [],
+   "done_means": "Fetched as Googlebot, houseloop.ai answers 200 with its canonical tag and no 'noindex'.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G25-P2",
+   "track": 3,
+   "title": "Public website on the new system - the sitemap answers",
+   "owner": "lee",
+   "due": "2026-12-25",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://houseloop.ai/sitemap.xml",
+     "status": 200,
+     "must_contain": [
+      "https://houseloop.ai/"
+     ],
+     "max_seconds": 15
+    }
+   },
+   "depends_on": [],
+   "done_means": "houseloop.ai/sitemap.xml answers 200 and lists houseloop.ai addresses.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G25",
+   "track": 3,
+   "title": "Public website served by the new system, SEO intact",
+   "owner": "lee",
+   "due": "2026-12-25",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://houseloop.ai/.well-known/houseloop-build",
+     "status": 200,
+     "must_contain": [
+      "houseloop-greenfield",
+      "production"
+     ],
+     "max_seconds": 10
+    }
+   },
+   "depends_on": [
+    "GF-G25-P1",
+    "GF-G25-P2",
+    "GF-G19",
+    "GF-G23"
+   ],
+   "done_means": "houseloop.ai's build line names the new app in production, and the parts hold.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Draft website canary Dec 1 to 13, plus 12 days. Every-URL parity needs a new check type (url_inventory_parity).",
+   "approval": null
+  },
+  {
+   "id": "GF-G26",
+   "track": 3,
+   "title": "Myli live: 100 leads a day through Zach's approval queue",
+   "owner": "lee",
+   "due": "2026-12-27",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-production",
+     "table": "NOT-RECORDED-view-myli-leads-worked-via-approval-queue-24h",
+     "min": 100
+    }
+   },
+   "depends_on": [
+    "GF-G12",
+    "GF-G17",
+    "GF-G23",
+    "GF-M7"
+   ],
+   "done_means": "At least 100 leads worked through the approval queue in the last 24 hours in production.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Owner OS forecast N-01 Dec 27 (Zach's Dec 15 plus 12 days). Zach's decision 4.",
+   "approval": null
+  },
+  {
+   "id": "GF-G27-P1",
+   "track": 3,
+   "title": "Switched - real texts delivered",
+   "owner": "lee",
+   "due": "2026-12-28",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-production",
+     "table": "NOT-RECORDED-view-real-texts-delivered-24h",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "At least one real text delivered by the new system in 24 hours.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Texting campaign must be approved.",
+   "approval": null
+  },
+  {
+   "id": "GF-G27-P2",
+   "track": 3,
+   "title": "Switched - real emails delivered",
+   "owner": "lee",
+   "due": "2026-12-28",
+   "check": {
+    "type": "db_row_count_at_least",
+    "params": {
+     "database": "greenfield-production",
+     "table": "NOT-RECORDED-view-real-emails-delivered-24h",
+     "min": 1
+    }
+   },
+   "depends_on": [
+    "GF-M7"
+   ],
+   "done_means": "At least one real email delivered by the new system in 24 hours.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G27-P3",
+   "track": 3,
+   "title": "Switched - a houseloop.ai sign-up lands in the new CRM",
+   "owner": "lee",
+   "due": "2026-12-28",
+   "check": {
+    "type": "e2e_signup_lands",
+    "params": {
+     "base_url": "https://houseloop.ai/"
+    }
+   },
+   "depends_on": [
+    "GF-M4"
+   ],
+   "done_means": "A scripted houseloop.ai sign-up lands as one person in the new CRM.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ",
+   "approval": null
+  },
+  {
+   "id": "GF-G27",
+   "track": 3,
+   "title": "CRM, lead intake, texts and email switched to the new system",
+   "owner": "lee",
+   "due": "2026-12-28",
+   "check": {
+    "type": "http_contains",
+    "params": {
+     "url": "https://crm.houseloop.ai/.well-known/houseloop-build",
+     "status": 200,
+     "must_contain": [
+      "houseloop-greenfield",
+      "production"
+     ],
+     "max_seconds": 10
+    }
+   },
+   "depends_on": [
+    "GF-G27-P1",
+    "GF-G27-P2",
+    "GF-G27-P3",
+    "GF-G23",
+    "GF-G24",
+    "GF-M8"
+   ],
+   "done_means": "crm.houseloop.ai's build line names the new app, and the parts hold. An 'old CRM writes nothing' part is added once M8 lands.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Draft switches Dec 10 to 20, plus 8 days; needs Zach's decision 3 and his go/no-go per switch.",
+   "approval": null
+  },
+  {
+   "id": "GF-G28-P1",
+   "track": 3,
+   "title": "The full thing working on the real site - its frozen test is pinned and wired in",
+   "owner": "lee",
+   "due": "2026-12-24",
+   "check": {
+    "type": "http_sha256",
+    "params": {
+     "url": "https://raw.githubusercontent.com/spradlz/houseloop-greenfield/main/.github/workflows/gf-suite-core0-smoke-production.yml",
+     "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+     "status": 200,
+     "auth": {
+      "keychain": "hl-gates-github-readonly",
+      "scheme": "token"
+     }
+    }
+   },
+   "depends_on": [],
+   "done_means": "The caller file .github/workflows/gf-suite-core0-smoke-production.yml on the app repository's main branch is byte for byte the frozen file. That file calls the frozen test in the checker-workflows repository by an exact commit, so nobody can change the test without changing this file and breaking this pin.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). ARM-BY part: due a week before the gate. The fingerprint is all zeros until the test is frozen (a blank that cannot match); Lee fills it by a logged relock. Written by the test author (Lee's desk), never by a builder.",
+   "approval": null
+  },
+  {
+   "id": "GF-G28",
+   "track": 3,
+   "title": "The full thing working on the real site",
+   "owner": "lee",
+   "due": "2026-12-31",
+   "check": {
+    "type": "github_ci_green",
+    "params": {
+     "repo": "spradlz/houseloop-greenfield",
+     "ref": "main",
+     "require": [
+      "NOT-RECORDED-check-name-of-suite-core0-smoke-production"
+     ],
+     "min_checks": 1,
+     "token": {
+      "keychain": "hl-gates-github-readonly"
+     }
+    }
+   },
+   "depends_on": [
+    "GF-G28-P1",
+    "GF-G25",
+    "GF-G26",
+    "GF-G27",
+    "GF-M4"
+   ],
+   "done_means": "The frozen production end-to-end test is green on the app's main branch.",
+   "note": "PROVISIONAL until Zach's yes on decision 1 (lock the ladder). Zach's deadline. The required check name is a blank until the test is frozen; a blank cannot pass. Until M4 lands, GitHub's 'skipped' and 'neutral' also count, so the frozen test must never be written to skip.",
+   "approval": null
+  }
+ ]
+}

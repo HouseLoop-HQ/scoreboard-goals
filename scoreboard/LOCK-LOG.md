@@ -37,3 +37,14 @@ Every change to a locked goals file is recorded here, append-only: the old hash,
 - goals added: none
 - goals removed: none
 - goals changed: M-DISK-STUDIO
+
+## 2026-10-06T18:13:13Z (2026-10-06 13:13:13 CDT) - goals-greenfield.json
+- old sha256: none (first lock)
+- new sha256: 2cc6c54d4c05f338aa127154e8e13bc06bb0d340211ddee7313afe3319b1adc4
+- run by: zachspradling on Mac-Studio.local
+- owner decision: /Users/zachspradling/HouseLoop-HQ/00-owner/decisions/OD-20261006-LOCK-THE-33-GREENFIELD-GATES.md
+- owner decision sha256: 859e66eff6eb26cbc9eee175d1810cd4f9cbdf0099283ae9da09c8e195b6c141
+- goals added: none
+- goals removed: none
+- goals changed: none
+- owner words: "Yes, lock the thirty three goals, whatever they are, the thirty three milestones, build those. I lock it, do it. Yes, do it." (Zach, 2026-10-06, OD-20261006-LOCK-THE-33-GREENFIELD-GATES)
