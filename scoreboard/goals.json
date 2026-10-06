@@ -1,0 +1,170 @@
+{
+  "schema": "HL_SCOREBOARD_GOALS/1",
+  "file_note": "First goals, written 2026-10-04 from today's facts. EVERY DATE AND OWNER SEAT IS PROVISIONAL until Zach approves them. A goal whose approval is null shows PROVISIONAL on the board and is counted apart from approved goals; approval names the owner decision file that approved the test and the date. The Greenfield sign-off gates arrive later as a second goals file with its own lock. This file is the goals of record: its authority is the protected branch of the goals-of-record repository (a rule changes only when a commit reviewed by Zach lands there). Locally it is also locked by hash (goals.lock) and by the newest LOCK-LOG.md entry; prepare a change with: check.py relock --od 00-owner/decisions/OD-....md, which lists every changed goal on the board in red for 7 days.",
+  "goals": [
+    {
+      "id": "M-CHECKER-HEARTBEAT",
+      "track": "M",
+      "title": "The scoreboard checker is running (it reported in the last 30 minutes)",
+      "owner": "houseloop-maintenance",
+      "due": "2026-10-04",
+      "approval": null,
+      "depends_on": [],
+      "check": {
+        "type": "job_ran_within",
+        "params": {"state_file": "${SCOREBOARD}/heartbeat.json", "field": "generated_at", "minutes": 30}
+      },
+      "done_means": "The checker wrote its heartbeat file within the last 30 minutes. It is read at the start of each run, so it shows the PREVIOUS run: a gap of more than 30 minutes (a sleeping Mac, a stopped job) shows up here on the next run and stays in history.jsonl. The first run ever shows 'no heartbeat yet'.",
+      "note": "PROVISIONAL date and owner. A stale scoreboard is also visible in the feed (freshness), because a dead checker cannot report on itself."
+    },
+    {
+      "id": "M-DISK-STUDIO",
+      "track": "M",
+      "title": "The Studio has at least 30 GB free disk",
+      "owner": "houseloop-maintenance",
+      "due": "2026-10-04",
+      "approval": null,
+      "depends_on": [],
+      "check": {
+        "type": "disk_free_at_least",
+        "params": {"path": "/System/Volumes/Data", "gb": 30, "expect_host": "Mac-Studio"}
+      },
+      "done_means": "The real data volume of the Studio reports 30 GB or more free (1 GB = 1,073,741,824 bytes, same as df -g). Free space inside the HLWork sparsebundle does not count; this reads the host disk. It measures the machine it runs on, so it can only be checked on the Studio (its Bonjour name is Mac-Studio): run on any other machine, such as the checker of record on Camp David, it is CANNOT CHECK (amber) and never a green or a red about the wrong machine.",
+      "note": "PROVISIONAL date and owner. The 30 GB line is the floor charter's Maintenance alarm. Standing rule: from the due date on, a failure is red. Until the checker of record can read the Studio's disk over ssh (needs HQ: a key for the checker account, then a relock with ssh_host), it reads CANNOT CHECK on that account."
+    },
+    {
+      "id": "M-DISK-CAMPDAVID",
+      "track": "M",
+      "title": "Camp David has at least 30 GB free disk",
+      "owner": "houseloop-maintenance",
+      "due": "2026-10-04",
+      "approval": null,
+      "depends_on": [],
+      "check": {
+        "type": "disk_free_at_least",
+        "params": {"ssh_host": "lee@192.168.1.211", "path": "/System/Volumes/Data", "gb": 30}
+      },
+      "done_means": "A one-shot ssh to Camp David reports 30 GB or more free on its data volume. If ssh cannot connect, the goal is CANNOT CHECK (amber), never green.",
+      "note": "PROVISIONAL date and owner. Needs the ssh key to work from the job that runs the checker."
+    },
+    {
+      "id": "T2-SIGNIN-LIVE",
+      "track": 2,
+      "title": "The /login page shows the one sign-in's first screen",
+      "owner": "myli",
+      "due": "2026-10-04",
+      "approval": null,
+      "depends_on": [],
+      "check": {
+        "type": "http_contains",
+        "params": {"url": "https://houseloop.ai/login", "status": 200, "must_contain": ["And you are?"], "max_seconds": 10}
+      },
+      "done_means": "The public /login page answers 200 within 10 seconds and shows the sign-in's opening line, 'And you are?'. That is only the first screen. It does not prove a visitor can sign in: goal T2-SIGNIN-END-TO-END is the real sign-in goal.",
+      "note": "PROVISIONAL date and owner seat. Green here means only that the first screen answers; it is not the sign-in being done. The real goal is T2-SIGNIN-END-TO-END."
+    },
+    {
+      "id": "T2-SIGNIN-END-TO-END",
+      "track": 2,
+      "title": "A test sign-up gets a texted code and lands as one lead in the CRM",
+      "owner": "myli",
+      "due": "2026-10-11",
+      "approval": null,
+      "depends_on": [],
+      "check": {
+        "type": "e2e_signup_lands",
+        "params": {"base_url": "https://houseloop.ai"}
+      },
+      "done_means": "A test sign-up (name and email or Google, then the phone number, then the texted code) ends as exactly one lead in the CRM. This is the real sign-in goal. The check stays CANNOT CHECK, never green, until Lee enables it; it is the only check that is ever allowed to submit a form.",
+      "note": "PROVISIONAL date and owner seat. Not enabled yet: it reads CANNOT CHECK (amber) and turns red after the due date, so the sign-in cannot look done on the first screen alone (see T2-SIGNIN-LIVE)."
+    },
+    {
+      "id": "T2-REGISTRATION-NOT-FORCED",
+      "track": 2,
+      "title": "Forced registration is off on houseloop.ai",
+      "owner": "ship",
+      "due": "2026-10-04",
+      "approval": {"od": "00-owner/decisions/OD-20261004-SEO-MASTER-PLAN-AND-KNOWLEDGE-GRAPH.md", "date": "2026-10-04", "od_sha256": "8badf25b3ecc6e5f7e5601f556f89f0005603ce9332c59568f3912fa2416934a"},
+      "depends_on": [],
+      "check": {
+        "type": "http_json",
+        "params": {"url": "https://houseloop.ai/api/registration-settings", "status": 200, "expect": [{"path": "forced_registration.on", "equals": false}], "max_seconds": 10}
+      },
+      "done_means": "The live registration-settings endpoint is read as JSON and its forced_registration.on value is exactly false (the JSON value false, not the text, not 0). Another switch in the answer being off does not count, a repeated key makes the answer unreadable (CANNOT CHECK), and text that merely looks like the switch inside another field does not count. Floor charter rule 9 and the retracted forced-registration ruling: no forced registration.",
+      "note": "PROVISIONAL date and owner seat; the test itself is approved by OD-20261004-SEO-MASTER-PLAN-AND-KNOWLEDGE-GRAPH (Zach retracted the forced-registration ruling). If Zach turns forced registration on, this goal must be relocked citing his decision."
+    },
+    {
+      "id": "T2-ROBOTS-UNCHANGED",
+      "track": 2,
+      "title": "robots.txt on houseloop.ai is unchanged (nothing blocks crawlers)",
+      "owner": "caleb",
+      "due": "2026-10-01",
+      "approval": {"od": "00-owner/decisions/OD-20261003-SEO-RESTORE-AND-AI-VISION-GO.md", "date": "2026-10-03", "od_sha256": "89e07db6e39e92b99594c36e53e203e06ed0bc4a91801cd7a6308533754645b3"},
+      "depends_on": [],
+      "check": {
+        "type": "http_sha256",
+        "params": {"url": "https://houseloop.ai/robots.txt", "status": 200, "bytes": 655, "sha256": "a6cd352149cb86cf1da5a1e00702c4c4bf99efdd322de18369b5beef65a91df0"}
+      },
+      "done_means": "The live robots.txt is byte for byte the file Zach saw on 2026-10-04: 655 bytes, fingerprint a6cd3521... Any change turns this red the same day, whoever made it. This only reads the file; the checker never touches it.",
+      "note": "PROVISIONAL. Date is the day the standing rule (never block crawlers) was ordered, so a change is red at once. If Caleb's approved SEO plan changes robots.txt, relock with Zach's words."
+    },
+    {
+      "id": "T2-OVERLAND-PARK-PAGE-WEIGHT",
+      "track": 2,
+      "title": "The Overland Park page is light enough and its first heading comes early, as ChatGPT-User sees it",
+      "owner": "caleb",
+      "due": "2026-10-11",
+      "approval": null,
+      "depends_on": [],
+      "check": {
+        "type": "http_contains",
+        "params": {
+          "url": "https://houseloop.ai/kansas/johnson-county/overland-park",
+          "user_agent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot",
+          "status": 200,
+          "max_bytes": 450000,
+          "first_h1_before_byte": 15000,
+          "max_seconds": 15
+        }
+      },
+      "done_means": "Fetched with the ChatGPT-User agent string, the page answers 200 within 15 seconds, is 450,000 bytes or less, and its first <h1> starts before byte 15,000.",
+      "note": "PROVISIONAL date. Expected to fail today: it shows NOT YET (a failing test with time left), and turns red if it still fails after the end of 2026-10-11 (Chicago)."
+    },
+    {
+      "id": "T2-HOME-PAGE-WEIGHT",
+      "track": 2,
+      "title": "The houseloop.ai home page is 750,000 bytes or less",
+      "owner": "benji-ui",
+      "due": "2026-10-11",
+      "approval": null,
+      "depends_on": [],
+      "check": {
+        "type": "http_contains",
+        "params": {"url": "https://houseloop.ai/", "status": 200, "max_bytes": 750000, "max_seconds": 15}
+      },
+      "done_means": "The home page answers 200 within 15 seconds and its HTML is 750,000 bytes or less.",
+      "note": "PROVISIONAL date and owner seat."
+    },
+    {
+      "id": "T2-LISTING-ONE-H1",
+      "track": 2,
+      "title": "A listing page has exactly one H1 heading",
+      "owner": "caleb",
+      "due": "2026-10-09",
+      "approval": null,
+      "depends_on": [],
+      "check": {
+        "type": "http_contains",
+        "params": {
+          "url": "https://houseloop.ai/home/4314-w-112th-terrace-leawood-ks-66211/HLID466057",
+          "status": 200,
+          "ignore_case": true,
+          "must_contain": ["<h1"],
+          "max_count": {"<h1": 1},
+          "max_seconds": 15
+        }
+      },
+      "done_means": "The sample listing page (4314 W 112th Terrace, Leawood, HLID466057) answers 200 and contains exactly one <h1> tag: at least one, no more than one.",
+      "note": "PROVISIONAL date. The listing is one sample page; Caleb's SEO plan decides the wider set."
+    }
+  ]
+}
